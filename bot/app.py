@@ -1,6 +1,8 @@
 import telebot
-from utils import search_download_youtube_video
+from botocore.exceptions import ClientError
 from loguru import logger
+import boto3
+import json
 
 
 class Bot:
@@ -37,7 +39,7 @@ class Bot:
     def download_user_photo(self, quality=0):
         """
         Downloads photos sent to the Bot to `photos` directory (should be existed)
-        :param quality: integer representing the file quality. Allowed values are [0, 1, 2, 3]
+        :param quality: integer representing the file quality. Allowed values are [0, 1, 2]
         :return:
         """
         if self.current_msg.content_type != 'photo':
@@ -46,7 +48,8 @@ class Bot:
         file_info = self.bot.get_file(self.current_msg.photo[quality].file_id)
         data = self.bot.download_file(file_info.file_path)
 
-        # TODO save `data` as a photo in `file_info.file_path` path
+        with open(file_info.file_path, 'wb') as f:
+            f.write(data)
 
     def handle_message(self, message):
         """Bot Main message handler"""
@@ -61,14 +64,40 @@ class QuoteBot(Bot):
 
 
 class YoutubeBot(Bot):
-    pass
+    def handle_message(self, message):
+        if self.current_msg.content_type == 'photo':
+            self.download_user_photo(quality=2)
+
+            # TODO (optional) implement me...
+
+        else:
+            try:
+                response = workers_queue.send_message(
+                    MessageBody=message.text,
+                    MessageAttributes={
+                        'chat_id': {'StringValue': str(message.chat.id), 'DataType': 'String'}
+                    }
+                )
+                logger.info(f'msg {response.get("MessageId")} has been sent to queue')
+                self.send_text('Your message is being processed...')
+            except ClientError as error:
+                logger.error(error)
+                self.send_text('Something went wrong, please try again...')
 
 
 if __name__ == '__main__':
-    with open('.telegramToken') as f:
-        _token = f.read()
+    with open('common/config.json') as f:
+        config = json.load(f)
 
-    my_bot = Bot(_token)
+    sqs = boto3.resource('sqs', region_name=config.get('aws_region'))
+    workers_queue = sqs.get_queue_by_name(
+        QueueName=config.get('bot_to_worker_queue_name')
+    )
+
+    secrets_manager = boto3.client('secretsmanager', region_name=config.get('aws_region'))
+    secret_value = secrets_manager.get_secret_value(
+        SecretId=config.get('telegram_token_secret_name')
+    )
+
+    my_bot = YoutubeBot(json.loads(secret_value['SecretString'])['telegramToken'])
     my_bot.start()
-
-
