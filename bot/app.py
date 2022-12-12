@@ -85,8 +85,18 @@ class YoutubeBot(Bot):
                 self.send_text('Something went wrong, please try again...')
 
 
+def get_telegram_token_secret():
+    secrets_manager = boto3.client('secretsmanager', region_name=config.get('aws_region'))
+    secret_value = secrets_manager.get_secret_value(
+        SecretId=config.get('telegram_token_secret_name')
+    )
+
+    # TODO extract the Telegram token value from secret_value object and return it
+    return
+
+
 if __name__ == '__main__':
-    with open('common/config.json') as f:
+    with open('config.json') as f:
         config = json.load(f)
 
     sqs = boto3.resource('sqs', region_name=config.get('aws_region'))
@@ -94,10 +104,7 @@ if __name__ == '__main__':
         QueueName=config.get('bot_to_worker_queue_name')
     )
 
-    secrets_manager = boto3.client('secretsmanager', region_name=config.get('aws_region'))
-    secret_value = secrets_manager.get_secret_value(
-        SecretId=config.get('telegram_token_secret_name')
-    )
+    telegram_token = get_telegram_token_secret()
 
-    my_bot = YoutubeBot(json.loads(secret_value['SecretString'])['telegramToken'])
+    my_bot = YoutubeBot(telegram_token)
     my_bot.start()

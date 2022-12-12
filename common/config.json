@@ -1,6 +1,0 @@
-{
-  "aws_region": "eu-north-1",
-  "bot_to_worker_queue_name": "alonit-queue",
-  "autoscaling_group_name": "<your-asg-name>",
-  "telegram_token_secret_name": "dev/telegramToken"
-}

@@ -6,6 +6,15 @@ from loguru import logger
 from utils import search_download_youtube_video
 
 
+with open('config.json') as f:
+    config = json.load(f)
+
+sqs = boto3.resource('sqs', region_name=config.get('aws_region'))
+queue = sqs.get_queue_by_name(
+    QueueName=config.get('bot_to_worker_queue_name')
+)
+
+
 def process_msg(msg):
     search_download_youtube_video(msg)
 
@@ -37,13 +46,12 @@ def main():
             time.sleep(10)
 
 
+def lambda_handler(event, context):
+    logger.info(f'New event {event}')
+
+    for record in event['Records']:
+        process_msg(str(record["body"]))
+
+
 if __name__ == '__main__':
-    with open('common/config.json') as f:
-        config = json.load(f)
-
-    sqs = boto3.resource('sqs', region_name=config.get('aws_region'))
-    queue = sqs.get_queue_by_name(
-        QueueName=config.get('bot_to_worker_queue_name')
-    )
-
     main()
