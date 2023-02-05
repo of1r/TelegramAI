@@ -27,8 +27,24 @@ def main():
     while True:
         backlog_per_instance = calc_backlog_per_instance()
         logger.info(f'backlog per instance: {backlog_per_instance}')
-
         # TODO send the backlog_per_instance metric to cloudwatch
+        cloudwatch = boto3.client('cloudwatch', region_name=config.get('aws_region'))
+        cloudwatch.put_metric_data(
+            MetricData=[
+                {
+                    'MetricName': 'BacklogPerInstance',
+                    'Dimensions': [
+                        {
+                            'Name': 'InstanceId',
+                            'Value': 'MyInstance'
+                        },
+                    ],
+                    'Value': backlog_per_instance,
+                    'Unit': 'None'
+                },
+            ],
+            Namespace='ao-namespace'
+        )
 
         time.sleep(60)
 

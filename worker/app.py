@@ -16,10 +16,10 @@ queue = sqs.get_queue_by_name(
 
 
 def process_msg(msg):
-    search_download_youtube_video(msg)
-
     # TODO upload the downloaded video to your S3 bucket
-
+    video = search_download_youtube_video(msg)
+    client = boto3.client("s3")
+    client.upload_file(video[0]['filename'], "ao-bucket", video[0]['filename'])
 
 def main():
     while True:

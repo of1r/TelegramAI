@@ -92,7 +92,8 @@ def get_telegram_token_secret():
     )
 
     # TODO extract the Telegram token value from secret_value object and return it
-    return
+    secret_value_json = json.loads(secret_value['SecretString'])
+    return secret_value_json['telegram_token']
 
 
 if __name__ == '__main__':
