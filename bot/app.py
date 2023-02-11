@@ -90,14 +90,14 @@ def get_telegram_token_secret():
     secret_value = secrets_manager.get_secret_value(
         SecretId=config.get('telegram_token_secret_name')
     )
-
     # TODO extract the Telegram token value from secret_value object and return it
-    secret_value_json = json.loads(secret_value['SecretString'])
-    return secret_value_json['telegram_token']
+    secret_string = secret_value.get('SecretString')
+    final_token = json.loads(secret_string).get('telegramToken')
+    return final_token
 
 
 if __name__ == '__main__':
-    with open('config.json') as f:
+    with open('./config.json') as f:
         config = json.load(f)
 
     sqs = boto3.resource('sqs', region_name=config.get('aws_region'))

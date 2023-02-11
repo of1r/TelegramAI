@@ -1,6 +1,6 @@
 {
-  "aws_region": "<app-aws-region>",
-  "bot_to_worker_queue_name": "<your-sqs-queue-name>",
-  "autoscaling_group_name": "<your-asg-name>",
-  "telegram_token_secret_name": "<your-telegram-token-name>"
+  "aws_region": "eu-central-1",
+  "bot_to_worker_queue_name": "ao-sqs",
+  "autoscaling_group_name": "ao-asg",
+  "telegram_token_secret_name": "of1r-telegramToken"
 }
