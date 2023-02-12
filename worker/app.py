@@ -19,7 +19,7 @@ def process_msg(msg):
     # TODO upload the downloaded video to your S3 bucket
     video = search_download_youtube_video(msg)
     client = boto3.client("s3")
-    client.upload_file(video[0]['filename'], "ao-bucket", video[0]['filename'])
+    client.upload_file(video[0]['filename'], "ao-bt", video[0]['filename'])
 
 def main():
     while True:
